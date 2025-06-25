@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from todo_fast.database import get_session
 from todo_fast.models import User
@@ -18,7 +18,7 @@ from todo_fast.security import get_current_user, get_password_hash
 
 router = APIRouter(prefix='/users', tags=['users'])
 
-Session = Annotated[Session, Depends(get_session)]
+Session = Annotated[AsyncSession, Depends(get_session)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
@@ -27,7 +27,7 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
     status_code=HTTPStatus.CREATED,
     response_model=UserPublic,
 )
-def create_user(user: UserSchemas, session: Session):
+async def create_user(user: UserSchemas, session: Session):
     """
     Create a new user.
 
@@ -35,7 +35,7 @@ def create_user(user: UserSchemas, session: Session):
     stores it in the in-memory database, and returns the created user
     without expossing the password.
     """
-    db_user = session.scalar(
+    db_user = await session.scalar(
         select(User).where(
             (User.username == user.username) | (User.email == user.email)
         )
@@ -61,14 +61,14 @@ def create_user(user: UserSchemas, session: Session):
         password=hashed_password
     )
     session.add(db_user)
-    session.commit()
-    session.refresh(db_user)
+    await session.commit()
+    await session.refresh(db_user)
 
     return db_user
 
 
 @router.get('/', response_model=UserList)
-def read_users(
+async def read_users(
     session: Session, filter_users: Annotated[FilterPage, Query()]
 ):
     """
@@ -76,15 +76,16 @@ def read_users(
 
     Returns a list of users currently stored in the database.
     """
-    users = session.scalars(
+    result = await session.scalars(
         select(User).offset(filter_users.offset).limit(filter_users.limit)
-        ).all()
+    )
+    users = result.all()
 
     return {'users': users}
 
 
-@router.put('/{user_id}', response_model=UserPublic)
-def update_user(
+@router.put('/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic)
+async def update_user(
     user_id: int,
     user: UserSchemas,
     session: Session,
@@ -103,7 +104,7 @@ def update_user(
         )
 
     # Verifica se o novo username ou email já está em uso por outro usuário
-    conflict_user = session.scalar(
+    conflict_user = await session.scalar(
         select(User).where(
             ((User.username == user.username) | (User.email == user.email)) &
             (User.id != user_id)
@@ -119,14 +120,14 @@ def update_user(
     current_user.username = user.username
     current_user.password = get_password_hash(user.password)
     current_user.email = user.email
-    session.commit()
-    session.refresh(current_user)
+    await session.commit()
+    await session.refresh(current_user)
 
     return current_user
 
 
 @router.delete('/{user_id}', response_model=Message)
-def delete_user(
+async def delete_user(
     user_id: int,
     session: Session,
     current_user: CurrentUser,
@@ -143,7 +144,7 @@ def delete_user(
             detail='Not enough permissions'
         )
 
-    session.delete(current_user)
-    session.commit()
+    await session.delete(current_user)
+    await session.commit()
 
     return {'message': 'User deleted'}
