@@ -1,0 +1,83 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+.venv.bak/
+
+# Environment variables
+.env
+.env.*
+!.env.example  # (se quiser deixar um exemplo no repo)
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Poetry
+poetry.lock
+
+# Alembic
+migrations/versions/*.pyc
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+
+# Type checking
+.mypy_cache/
+.pyright/
+
+# Lint / Formatters
+.ruff_cache/
+*.ruff_cache/
+.dmypy.json
+.pyre/
+
+# VS Code
+.vscode/
+
+# PyCharm / JetBrains
+.idea/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Swap files
+*.swp
+*.swo
+
+# Databases & Local data
+*.db
+database.db
+*.sqlite3
+
+# Lock files (optional, se não quiser versionar)
+poetry.lock
+
+# Task runner artifacts
+.task/
+
+# Optional: Jupyter Notebook checkpoints
+.ipynb_checkpoints/
