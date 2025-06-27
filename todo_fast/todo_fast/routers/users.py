@@ -31,9 +31,16 @@ async def create_user(user: UserSchemas, session: Session):
     """
     Create a new user.
 
-    Receives user data (username, email, password), assings a unique ID,
-    stores it in the in-memory database, and returns the created user
-    without expossing the password.
+    Receives user data (username, email, password), hashes the password,
+    stores the user in the database, and returns the created user's
+    public information without exposing the password.
+
+    Raises:
+        HTTPException (409 Conflict): If the
+        username or email already exists.
+
+    Returns:
+        UserPublic: The public representation of the newly created user.
     """
     db_user = await session.scalar(
         select(User).where(
@@ -74,7 +81,17 @@ async def read_users(
     """
     Retrieve all users.
 
-    Returns a list of users currently stored in the database.
+    Returns a paginated list of users currently stored in the database.
+    Supports `offset` and `limit` query parameters for pagination.
+
+    Args:
+        session (Session): The database session,
+        injected by `get_session`.
+        filter_users (FilterPage): Query parameters
+        for pagination (offset, limit).
+
+    Returns:
+        UserList: A list of `UserPublic` objects.
     """
     result = await session.scalars(
         select(User).offset(filter_users.offset).limit(filter_users.limit)
@@ -94,8 +111,17 @@ async def update_user(
     """
     Update an existing user.
 
-    Updates the username, email, password of the user specified
-    by user_id. Raises 404 if the user does not exist.
+    Updates the username, email, and password of the user specified
+    by `user_id`. Only the authenticated user can update their own profile.
+
+    Raises:
+        HTTPException (403 Forbidden): If the authenticated
+        user tries to update another user's profile.
+        HTTPException (409 Conflict): If the new username
+        or email already exists for another user.
+
+    Returns:
+        UserPublic: The updated user's public information.
     """
     if current_user.id != user_id:
         raise HTTPException(
@@ -135,8 +161,15 @@ async def delete_user(
     """
     Delete a user.
 
-    Removes the user specified by user_id from the database.
-    Raises 404 if the user does not exist.
+    Removes the user specified by `user_id` from the database.
+    Only the authenticated user can delete their own profile.
+
+    Raises:
+        HTTPException (403 Forbidden): If the authenticated
+        user tries to delete another user's profile.
+
+    Returns:
+        Message: A confirmation message indicating successful deletion.
     """
     if current_user.id != user_id:
         raise HTTPException(
