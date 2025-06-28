@@ -23,7 +23,6 @@
 - 📚 Complete docstring coverage across the codebase
 - 🧩 Modular design for easy extension and production deployment
 
----
 
 ## ✅ Features
 
@@ -32,7 +31,6 @@
 - Auth logic ready to integrate (token-based system using JWT)
 - CI runs automated tests on every push and pull request
 
----
 
 ## 🚀 Getting Started
 
@@ -72,7 +70,6 @@ poetry run task test
 ```
 > Tests are executed automatically on every push via GitHub Actions.
 
----
 
 ## 🧠 Project Structure
 
@@ -124,13 +121,11 @@ Pull requests are welcome. For major changes, please open an issue first.
 
 5. Open a pull request
 
----
 
 ## 📝 License
 
 This project is licensed under the MIT License — see the LICENSE file for details.
 
----
 
 ## ⚡ Final Note
 
